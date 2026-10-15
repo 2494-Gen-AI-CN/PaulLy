@@ -33,7 +33,7 @@ def handle_calculate_ev():
     # payload['end_level']     -> e.g. 40
     # payload['current_stats'] -> e.g. {"hp": 20, "str": 8, ...}
     # payload['segments']      -> e.g. [{"segment": 1, "start_level": 1, "end_level": 20, "class_name": "Gladiator", "mount": "None / Foot"}, ...]
-
+    calc_ev(payload[current_stats])
     current = payload.get('current_stats', {})
 
     # Return structure expected by the frontend:
