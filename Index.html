@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fire Emblem - Expected Value Calculator</title>
+  <style>
+    /* ============================================================ */
+    /* CLEAN & SIMPLE STYLING                                       */
+    /* ============================================================ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 2rem 1rem;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      border: 1px solid #334155;
+    }
+    h1 { color: #fbbf24; font-size: 1.75rem; margin-bottom: 0.25rem; }
+    p.subtitle { color: #94a3b8; font-size: 0.95rem; margin-bottom: 2rem; }
+    
+    .section {
+      background: #111827;
+      padding: 1.25rem;
+      border-radius: 0.5rem;
+      border: 1px solid #334155;
+      margin-bottom: 1.5rem;
+    }
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.4rem;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    select:focus, input:focus { border-color: #f59e0b; }
+
+    /* Sliders */
+    .slider-group {
+      margin-bottom: 1rem;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 0.35rem;
+    }
+    .slider-val { color: #38bdf8; font-weight: 700; }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: #334155;
+      border-radius: 3px;
+      cursor: pointer;
+      accent-color: #f59e0b;
+    }
+
+    /* 9-Stat Inputs */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 0.5rem;
+    }
+    .stat-input-box {
+      text-align: center;
+      background: #0f172a;
+      padding: 0.5rem;
+      border-radius: 0.4rem;
+      border: 1px solid #334155;
+    }
+    .stat-input-box label { font-size: 0.75rem; margin-bottom: 0.25rem; }
+    .stat-input-box input {
+      text-align: center;
+      font-weight: 700;
+      color: #38bdf8;
+      padding: 0.3rem;
+      font-size: 1.1rem;
+    }
+
+    /* Segments */
+    .segment-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      background: #0f172a;
+      padding: 0.75rem;
+      border-radius: 0.4rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #334155;
+    }
+    @media (max-width: 650px) {
+      .segment-row { grid-template-columns: 1fr; }
+    }
+    .btn-remove {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.7rem;
+      border-radius: 0.3rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .btn-add {
+      background: #334155;
+      color: #fbbf24;
+      border: 1px dashed #f59e0b;
+      padding: 0.6rem 1rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      font-weight: 700;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    .btn-add:hover { background: #3b4252; }
+
+    /* Submit Button */
+    .btn-calc {
+      background: #f59e0b;
+      color: #0f172a;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      margin: 1.5rem 0;
+      transition: background 0.15s;
+    }
+    .btn-calc:hover { background: #d97706; }
+    #status-msg {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+    }
+
+    /* Output Results Box */
+    .output-section {
+      background: #0b1120;
+      border: 2px solid #f59e0b;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+    }
+    .output-card {
+      text-align: center;
+      background: #1e293b;
+      padding: 0.75rem 0.5rem;
+      border-radius: 0.4rem;
+      border: 1px solid #334155;
+    }
+    .out-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #38bdf8;
+      display: block;
+    }
+    .out-gain {
+      font-size: 0.8rem;
+      color: #4ade80;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚔️ Fire Emblem Expected Value Calculator</h1>
+      <p class="subtitle">Frontend UI • Sends inputs to Python (Flask) and renders Python's returned calculation.</p>
+    </header>
+
+    <!-- ======================================================== -->
+    <!-- INPUT SECTION 1: Character & Level Range Sliders         -->
+    <!-- ======================================================== -->
+    <div class="section">
+      <div class="section-title">1. Character &amp; Level Range (Inputs)</div>
+      
+      <div class="form-row">
+        <div>
+          <label for="character">Select Character</label>
+          <select id="character" name="character"></select>
+        </div>
+      </div>
+
+      <!-- Start Level Slider -->
+      <div class="slider-group">
+        <div class="slider-header">
+          <label for="start-level">Starting Level</label>
+          <span class="slider-val" id="start-level-text">Lv 1</span>
+        </div>
+        <input type="range" id="start-level" min="1" max="98" value="1" oninput="onLevelSliderChange()">
+      </div>
+
+      <!-- End Level Slider -->
+      <div class="slider-group">
+        <div class="slider-header">
+          <label for="end-level">Ending Target Level</label>
+          <span class="slider-val" id="end-level-text">Lv 40</span>
+        </div>
+        <input type="range" id="end-level" min="2" max="99" value="40" oninput="onLevelSliderChange()">
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- INPUT SECTION 2: Current Stats (at Starting Level)       -->
+    <!-- ======================================================== -->
+    <div class="section">
+      <div class="section-title">2. Current Stats at Starting Level (Inputs)</div>
+      <div class="stats-grid">
+        <div class="stat-input-box"><label for="stat-hp">HP</label><input type="number" id="stat-hp" value="20"></div>
+        <div class="stat-input-box"><label for="stat-str">STR</label><input type="number" id="stat-str" value="8"></div>
+        <div class="stat-input-box"><label for="stat-mag">MAG</label><input type="number" id="stat-mag" value="4"></div>
+        <div class="stat-input-box"><label for="stat-spd">SPD</label><input type="number" id="stat-spd" value="7"></div>
+        <div class="stat-input-box"><label for="stat-dex">DEX</label><input type="number" id="stat-dex" value="7"></div>
+        <div class="stat-input-box"><label for="stat-def">DEF</label><input type="number" id="stat-def" value="6"></div>
+        <div class="stat-input-box"><label for="stat-res">RES</label><input type="number" id="stat-res" value="3"></div>
+        <div class="stat-input-box"><label for="stat-lck">LCK</label><input type="number" id="stat-lck" value="5"></div>
+        <div class="stat-input-box"><label for="stat-cha">CHA</label><input type="number" id="stat-cha" value="6"></div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- INPUT SECTION 3: Class & Mount Segments                  -->
+    <!-- ======================================================== -->
+    <div class="section">
+      <div class="section-title">3. Class Change &amp; Mount Segments (Inputs)</div>
+      <div id="segments-container"></div>
+      <button type="button" class="btn-add" onclick="addSegmentRow()">+ Add Class Change Segment</button>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- BUTTON: Send all inputs to Python (POST /calculate_ev)   -->
+    <!-- ======================================================== -->
+    <button type="button" class="btn-calc" onclick="calculateInPython()">⚡ Run Python Logic</button>
+    <div id="status-msg">Click above to send inputs to Python endpoint POST /calculate_ev</div>
+
+    <!-- ======================================================== -->
+    <!-- OUTPUT SECTION: This is where Python returns its output  -->
+    <!-- ======================================================== -->
+    <div class="output-section">
+      <div class="section-title" style="color:#fbbf24;">4. Output: Calculated Expected Stats (From Python)</div>
+      <div class="stats-grid">
+        <div class="output-card"><label>HP</label><span class="out-val" id="out-hp">--</span><span class="out-gain" id="gain-hp">+0</span></div>
+        <div class="output-card"><label>STR</label><span class="out-val" id="out-str">--</span><span class="out-gain" id="gain-str">+0</span></div>
+        <div class="output-card"><label>MAG</label><span class="out-val" id="out-mag">--</span><span class="out-gain" id="gain-mag">+0</span></div>
+        <div class="output-card"><label>SPD</label><span class="out-val" id="out-spd">--</span><span class="out-gain" id="gain-spd">+0</span></div>
+        <div class="output-card"><label>DEX</label><span class="out-val" id="out-dex">--</span><span class="out-gain" id="gain-dex">+0</span></div>
+        <div class="output-card"><label>DEF</label><span class="out-val" id="out-def">--</span><span class="out-gain" id="gain-def">+0</span></div>
+        <div class="output-card"><label>RES</label><span class="out-val" id="out-res">--</span><span class="out-gain" id="gain-res">+0</span></div>
+        <div class="output-card"><label>LCK</label><span class="out-val" id="out-lck">--</span><span class="out-gain" id="gain-lck">+0</span></div>
+        <div class="output-card"><label>CHA</label><span class="out-val" id="out-cha">--</span><span class="out-gain" id="gain-cha">+0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SIMPLE JAVASCRIPT: ONLY COLLECTS INPUTS & DISPLAYS OUTPUTS   -->
+  <!-- ============================================================ -->
+  <script>
+    const STATS = ['hp', 'str', 'mag', 'spd', 'dex', 'def', 'res', 'lck', 'cha'];
+    
+    // Preset Mount options for user convenience
+    const MOUNT_OPTIONS = ["None / Foot", "Ornius Mount", "Caladrius Mount", "Elephant Mount", "Horse / Cavalry", "Dragon / Wyvern"];
+    let classOptions = [];
+
+    // --- 1. LOAD DROPDOWNS FROM FLASK ON PAGE LOAD ---
+    async function loadDropdowns() {
+      try {
+        // Fetch character names from Flask /getCharData
+        const charRes = await fetch('/getCharData');
+        const charData = await charRes.json();
+        const charSelect = document.getElementById('character');
+        charSelect.innerHTML = Object.keys(charData).map(name => `<option value="${name}">${name}</option>`).join('');
+
+        // Fetch class names from Flask /getClassData
+        const classRes = await fetch('/getClassData');
+        const classData = await classRes.json();
+        classOptions = Object.keys(classData);
+
+        // Add 2 default starter segments
+        addSegmentRow(20, "Gladiator", "None / Foot");
+        addSegmentRow(40, "Warrior", "None / Foot");
+      } catch (e) {
+        console.error("Could not fetch character/class data from Flask:", e);
+      }
+    }
+
+    // --- 2. SLIDERS: Keep start level <= end level ---
+    function onLevelSliderChange() {
+      let start = parseInt(document.getElementById('start-level').value);
+      let end = parseInt(document.getElementById('end-level').value);
+
+      if (start >= end) {
+        start = end - 1;
+        document.getElementById('start-level').value = start;
+      }
+
+      document.getElementById('start-level-text').textContent = "Lv " + start;
+      document.getElementById('end-level-text').textContent = "Lv " + end;
+    }
+
+    // --- 3. DYNAMIC SEGMENTS UI ---
+    let segmentCount = 0;
+    function addSegmentRow(endLevel = 40, className = "Gladiator", mount = "None / Foot") {
+      segmentCount++;
+      const container = document.getElementById('segments-container');
+      const div = document.createElement('div');
+      div.className = 'segment-row';
+      div.id = 'segment-row-' + segmentCount;
+      div.innerHTML = `
+        <div>
+          <label>Class</label>
+          <select class="seg-class">
+            ${classOptions.map(c => `<option value="${c}" ${c === className ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Mount</label>
+          <select class="seg-mount">
+            ${MOUNT_OPTIONS.map(m => `<option value="${m}" ${m === mount ? 'selected' : ''}>${m}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Until Level</label>
+          <input type="number" class="seg-level" value="${endLevel}" min="2" max="99">
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button type="button" class="btn-remove" onclick="removeSegmentRow('${div.id}')">✕</button>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeSegmentRow(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    // --- 4. COLLECT ALL INPUTS INTO JSON FOR PYTHON ---
+    function collectInputs() {
+      const segmentRows = document.querySelectorAll('.segment-row');
+      const segments = [];
+      segmentRows.forEach((row, i) => {
+        segments.push({
+          segment: i + 1,
+          class_name: row.querySelector('.seg-class').value,
+          mount: row.querySelector('.seg-mount').value,
+          until_level: parseInt(row.querySelector('.seg-level').value) || 0
+        });
+      });
+
+      return {
+        character: document.getElementById('character').value,
+        start_level: parseInt(document.getElementById('start-level').value),
+        end_level: parseInt(document.getElementById('end-level').value),
+        current_stats: {
+          hp: parseFloat(document.getElementById('stat-hp').value) || 0,
+          str: parseFloat(document.getElementById('stat-str').value) || 0,
+          mag: parseFloat(document.getElementById('stat-mag').value) || 0,
+          spd: parseFloat(document.getElementById('stat-spd').value) || 0,
+          dex: parseFloat(document.getElementById('stat-dex').value) || 0,
+          def: parseFloat(document.getElementById('stat-def').value) || 0,
+          res: parseFloat(document.getElementById('stat-res').value) || 0,
+          lck: parseFloat(document.getElementById('stat-lck').value) || 0,
+          cha: parseFloat(document.getElementById('stat-cha').value) || 0
+        },
+        segments: segments
+      };
+    }
+
+    // --- 5. CALL PYTHON BACKEND (/calculate_ev) ---
+    async function calculateInPython() {
+      const payload = collectInputs();
+      const statusEl = document.getElementById('status-msg');
+      statusEl.textContent = "Sending input data to Python backend (/calculate_ev)...";
+
+      try {
+        const response = await fetch('/calculate_ev', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          statusEl.textContent = "Error: Python endpoint returned HTTP " + response.status;
+          return;
+        }
+
+        const data = await response.json();
+        statusEl.textContent = "Calculation complete! Output displayed below.";
+        displayPythonOutput(data);
+      } catch (err) {
+        statusEl.textContent = "Failed to connect to Python backend: " + err.message;
+      }
+    }
+
+    // --- 6. DISPLAY PYTHON OUTPUT IN THE HTML OUTPUT CARDS ---
+    function displayPythonOutput(data) {
+      STATS.forEach(stat => {
+        // Output expected final stat (e.g. data.expected_stats['hp'])
+        if (data.expected_stats && data.expected_stats[stat] !== undefined) {
+          document.getElementById('out-' + stat).textContent = data.expected_stats[stat];
+        }
+        // Output stat gains (e.g. data.stat_gains['hp'])
+        if (data.stat_gains && data.stat_gains[stat] !== undefined) {
+          document.getElementById('gain-' + stat).textContent = '+' + data.stat_gains[stat];
+        }
+      });
+    }
+
+    // Initialize dropdowns on load
+    window.addEventListener('DOMContentLoaded', loadDropdowns);
+  </script>
+</body>
+</html>
