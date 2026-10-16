@@ -298,17 +298,20 @@
     const MOUNT_OPTIONS = ["None / Foot", "Ornius Mount", "Caladrius Mount", "Elephant Mount", "Horse / Cavalry", "Dragon / Wyvern"];
     let classOptions = [];
 
+    // Automatically target Flask on 127.0.0.1:5000 even if Index.html is opened directly or via PyCharm preview
+    const API_BASE = window.location.port === '5000' ? '' : 'http://127.0.0.1:5000';
+
     // --- 1. LOAD DROPDOWNS FROM FLASK ON PAGE LOAD ---
     async function loadDropdowns() {
       try {
         // Fetch character names from Flask /getCharData
-        const charRes = await fetch('/getCharData');
+        const charRes = await fetch(`${API_BASE}/getCharData`);
         const charData = await charRes.json();
         const charSelect = document.getElementById('character');
         charSelect.innerHTML = Object.keys(charData).map(name => `<option value="${name}">${name}</option>`).join('');
 
         // Fetch class names from Flask /getClassData
-        const classRes = await fetch('/getClassData');
+        const classRes = await fetch(`${API_BASE}/getClassData`);
         const classData = await classRes.json();
         classOptions = Object.keys(classData);
 
@@ -411,7 +414,7 @@
       statusEl.textContent = "Sending input data to Python backend (/calculate_ev)...";
 
       try {
-        const response = await fetch('/calculate_ev', {
+        const response = await fetch(`${API_BASE}/calculate_ev`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
