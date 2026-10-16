@@ -92,8 +92,8 @@ def handle_calculate_ev():
     else:
         current_stats = calc_ev(current_stats, char_growth, {}, start_level, end_level)
 
-    expected_stats = {s: round(current_stats[s], 2) for s in STATS}
-    stat_gains = {s: round(current_stats[s] - initial_stats[s], 2) for s in STATS}
+    expected_stats = {s: round(current_stats[s]) for s in STATS}
+    stat_gains = {s: round(current_stats[s] - initial_stats[s]) for s in STATS}
 
     # Return structure expected by the frontend:
     return jsonify({
